@@ -14,12 +14,14 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG_FRAGMENT1 = "FRAGMENT1";
     private static final String TAG_FRAGMENT3 = "FRAGMENT3";
+    private static final String KEY_NAME = "name";
 
     private ActivityMainBinding binding;
     private String name;
     private String email;
     private String gender;
     private String university;
+    private String age;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,11 @@ public class MainActivity extends AppCompatActivity
                     .beginTransaction()
                     .add(R.id.fragment_container, Fragment1.newInstance(null), TAG_FRAGMENT1)
                     .commit();
+        } else {
+            name = savedInstanceState.getString(KEY_NAME);
         }
+
+        updateContinueButtonVisibility();
 
         binding.buttonContinue.setOnClickListener(view -> {
             Fragment f = getSupportFragmentManager().findFragmentByTag(TAG_FRAGMENT1);
@@ -56,19 +62,29 @@ public class MainActivity extends AppCompatActivity
             binding.buttonContinue.setVisibility(View.GONE);
         });
 
-        getSupportFragmentManager().addOnBackStackChangedListener(() -> {
-            if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
-                binding.buttonContinue.setVisibility(View.VISIBLE);
-            }
-        });
+        getSupportFragmentManager().addOnBackStackChangedListener(
+                this::updateContinueButtonVisibility);
+    }
+
+    private void updateContinueButtonVisibility() {
+        boolean onFirstScreen = getSupportFragmentManager().getBackStackEntryCount() == 0;
+        binding.buttonContinue.setVisibility(onFirstScreen ? View.VISIBLE : View.GONE);
     }
 
     @Override
-    public void onContinueClicked(String name, String email, String gender, String university) {
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_NAME, name);
+    }
+
+    @Override
+    public void onContinueClicked(String name, String email, String gender,
+                                  String university, String age) {
         this.name = name;
         this.email = email;
         this.gender = gender;
         this.university = university;
+        this.age = age;
 
         getSupportFragmentManager()
                 .beginTransaction()
